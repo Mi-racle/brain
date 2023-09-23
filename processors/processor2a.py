@@ -56,7 +56,7 @@ for i, row in table_serial.iterrows():
         timestamp = table_timestamp.iloc[i, j]
 
         time_delta = timestamp - first_timestamp
-        interval = time_delta.total_seconds() / 3600.
+        interval = time_delta.total_seconds() / 3600. + first_interval
 
         sample = {
             'sub_id': sub_id,
