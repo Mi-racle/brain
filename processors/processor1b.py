@@ -2,10 +2,12 @@ from pathlib import Path
 
 import pandas as pd
 
-DATA_PATH = 'data'
+from utils import ROOT
+
+DATA_PATH = ROOT / 'data'
 
 table1 = pd.read_excel(
-    Path(DATA_PATH) / '表1-患者列表及临床信息.xlsx',
+    DATA_PATH / '表1-患者列表及临床信息.xlsx',
     sheet_name='患者信息',
     header=0
 )
@@ -30,7 +32,7 @@ table1.drop(['血压'], axis=1, inplace=True)
 table1 = table1.iloc[:, 3:]
 
 table2 = pd.read_excel(
-    Path(DATA_PATH) / '表2-患者影像信息血肿及水肿的体积及位置.xlsx',
+    DATA_PATH / '表2-患者影像信息血肿及水肿的体积及位置.xlsx',
     sheet_name='Data',
     header=0
 )
@@ -39,7 +41,7 @@ table2 = table2.iloc[:, :24]
 table2.rename(columns={'首次检查流水号': '入院首次影像检查流水号'}, inplace=True)
 
 table3 = pd.read_excel(
-    Path(DATA_PATH) / '表3-患者影像信息血肿及水肿的形状及灰度分布.xlsx',
+    DATA_PATH / '表3-患者影像信息血肿及水肿的形状及灰度分布.xlsx',
     sheet_name='Hemo',
     header=0
 )
@@ -62,4 +64,4 @@ final_table.insert(0, '入院首次影像检查流水号', serials)
 final_table['入院首次影像检查流水号'] = final_table['入院首次影像检查流水号'].astype(str)
 final_table.insert(0, 'ID', ids)
 
-final_table.to_excel(Path(DATA_PATH) / '1b.xlsx', index=False)
+final_table.to_excel(DATA_PATH / '1b.xlsx', index=False)
