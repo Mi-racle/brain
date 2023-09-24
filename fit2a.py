@@ -78,12 +78,10 @@ if __name__ == '__main__':
     # fit
     params, *covariance = curve_fit(f=func, xdata=x_data, ydata=y_data)
 
-    a, b = params
-
-    print(f"a: {a}, b: {b}")
+    print(f"params: {params}")
 
     plt.scatter(x_data, y_data, s=10, label="data")
-    plt.plot(x_data, func(x_data, a, b), color='red', label="curve")
+    plt.plot(x_data, func(x_data, *params), color='red', label="curve")
     plt.xlabel("time")
     plt.ylabel("volume")
     plt.legend()
@@ -103,10 +101,10 @@ if __name__ == '__main__':
     for i in range(len(sub_ids)):
 
         sub_id = extract_numbers_from_end(sub_ids[i])
-        x = x_data[i]
-        y = y_data[i]
 
-        pred_y = func(x, a, b)
+        x, y = x_data[i], y_data[i]
+
+        pred_y = func(x, *params)
         residual = abs(pred_y - y)
 
         residuals[sub_id - 1] += residual

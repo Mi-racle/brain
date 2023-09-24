@@ -1,10 +1,11 @@
+import torch
 import torch.nn as nn
 
 
 class Net(nn.Module):
 
     def __init__(self, ch):
-
+        torch.argmax()
         super().__init__()
 
         neu_num0 = 128

@@ -48,7 +48,7 @@ for i, row in table_serial.iterrows():
     for j, serial in enumerate(row):
 
         # nan
-        if serial != table_serial.iloc[i][j]:
+        if serial != table_serial.iloc[i, j]:
             break
 
         serial = str(int(serial))
