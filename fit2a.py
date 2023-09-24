@@ -1,3 +1,4 @@
+import argparse
 import os.path
 import re
 
@@ -8,8 +9,15 @@ import pandas as pd
 
 from utils import ROOT
 
-DATA_PATH = ROOT / 'data'
-OUTPUT_DIR = ROOT / 'logs'
+parser = argparse.ArgumentParser()
+parser.add_argument('--mode', default='ED', type=str, help='Hemo or ED')
+opt = parser.parse_args()
+
+MODE = opt.mode
+
+DATA_DIR_PATH = ROOT / 'data'
+OUTPUT_XLSX_PATH = ROOT / f'logs/2a/2a{MODE}result.xlsx'
+OUTPUT_IMG_PATH = ROOT / f'logs/2a/2a{MODE}.png'
 
 
 # y = a * x^(1/2) * e^(-bx)
@@ -73,7 +81,7 @@ def extract_numbers_from_end(sub_id):
 
 if __name__ == '__main__':
 
-    sub_ids, x_data, y_data = get_data(DATA_PATH / '2a.xlsx')
+    sub_ids, x_data, y_data = get_data(DATA_DIR_PATH / f'2a{MODE}.xlsx')
 
     # fit
     params, *covariance = curve_fit(f=func, xdata=x_data, ydata=y_data)
@@ -86,15 +94,14 @@ if __name__ == '__main__':
     plt.ylabel("volume")
     plt.legend()
 
-    if not os.path.exists(OUTPUT_DIR):
+    if not os.path.exists(OUTPUT_XLSX_PATH.parents[1]):
+        os.mkdir(OUTPUT_XLSX_PATH.parents[1])
 
-        os.mkdir(OUTPUT_DIR)
+    if not os.path.exists(OUTPUT_XLSX_PATH.parents[0]):
+        os.mkdir(OUTPUT_XLSX_PATH.parents[0])
 
-    if not os.path.exists(OUTPUT_DIR / '2a'):
-
-        os.mkdir(OUTPUT_DIR / '2a')
-
-    plt.savefig(OUTPUT_DIR / '2a/2a.png')
+    plt.savefig(OUTPUT_IMG_PATH)
+    plt.clf()
 
     residuals = np.zeros(100)
 
@@ -111,4 +118,4 @@ if __name__ == '__main__':
 
     output_table = pd.DataFrame()
     output_table['残差'] = residuals
-    output_table.to_excel(OUTPUT_DIR / '2a/2aresult.xlsx', index=False)
+    output_table.to_excel(OUTPUT_XLSX_PATH, index=False)

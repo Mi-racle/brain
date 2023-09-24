@@ -1,3 +1,4 @@
+import argparse
 import os.path
 
 import numpy as np
@@ -9,8 +10,16 @@ from tqdm import tqdm
 
 from utils import ROOT
 
-DATA_PATH = ROOT / 'data'
-OUTPUT_DIR = ROOT / 'logs'
+parser = argparse.ArgumentParser()
+parser.add_argument('--mode', default='ED', type=str, help='Hemo or ED')
+opt = parser.parse_args()
+
+MODE = opt.mode
+
+DATA_DIR_PATH = ROOT / 'data'
+OUTPUT_DIR = ROOT / f'logs/2b'
+
+CLUSTERS = 5
 
 
 # y = a * x^(1/2) * e^(-bx)
@@ -63,7 +72,7 @@ def group_data(x_data, y_data, labels):
 
     index_groups = []
 
-    for i in range(25):
+    for i in range(CLUSTERS):
 
         index_groups.append(
             [_ for _, value in enumerate(labels) if value == i]
@@ -118,24 +127,22 @@ def group_data(x_data, y_data, labels):
 
 def average_kmeans(samples):
 
-    clusters = 25
-
-    kmeans = KMeans(n_clusters=clusters, init='k-means++', random_state=0)
+    kmeans = KMeans(n_clusters=CLUSTERS, init='k-means++', random_state=0)
 
     distance_matrix = []
 
-    for i in tqdm(range(len(samples))):
+    for iter in tqdm(range(len(samples))):
 
-        params1 = samples[i]['params']
+        params1 = samples[iter]['params']
         distance_vector = []
 
         for j in range(len(samples)):
 
-            if i == j:
+            if iter == j:
                 distance_vector.append(0.)
 
-            elif i > j:  # lower triangle
-                distance_vector.append(distance_matrix[j][i])
+            elif iter > j:  # lower triangle
+                distance_vector.append(distance_matrix[j][iter])
 
             else:
                 params2 = samples[j]['params']
@@ -145,12 +152,12 @@ def average_kmeans(samples):
 
     distance_matrix = np.array(distance_matrix)
 
-    # 4 curves per group
+    # 25 curves per group
 
-    max_iterations = 100
-    desired_cluster_size = len(samples) / 25
+    max_iterations = 200
+    desired_cluster_size = len(samples) / CLUSTERS
 
-    for i in range(max_iterations):
+    for iter in range(max_iterations):
 
         kmeans.fit(distance_matrix)
 
@@ -195,7 +202,7 @@ def curve_similarity(params1, params2):
 
 if __name__ == '__main__':
 
-    x_data, y_data = get_data(DATA_PATH / '2b.xlsx')
+    x_data, y_data = get_data(DATA_DIR_PATH / f'2b{MODE}.xlsx')
 
     samples = []
     # fit
@@ -227,11 +234,13 @@ if __name__ == '__main__':
 
         grouped_params.append(params)
 
-        # plt.scatter(x_axis, y_axis, s=10, label="data")
-        # plt.plot(x_axis, func(x_axis, *params), color='red', label="curve")
-        # plt.xlabel("time")
-        # plt.ylabel("volume")
-        # plt.legend()
+        plt.scatter(x_axis, y_axis, s=10, label="data")
+        plt.plot(x_axis, func(x_axis, *params), color='red', label="curve")
+        plt.xlabel("time")
+        plt.ylabel("volume")
+        plt.legend()
+        plt.savefig(OUTPUT_DIR / f'2b{MODE}{i}.png')
+        plt.clf()
         # plt.show()
 
     for i in range(len(x_data)):
@@ -254,12 +263,12 @@ if __name__ == '__main__':
 
         samples[i]['residual'] = total_residual
 
+    if not os.path.exists(OUTPUT_DIR.parent):
+        os.mkdir(OUTPUT_DIR.parent)
+
     if not os.path.exists(OUTPUT_DIR):
         os.mkdir(OUTPUT_DIR)
 
-    if not os.path.exists(OUTPUT_DIR / '2b'):
-        os.mkdir(OUTPUT_DIR / '2b')
-
     keys = list(samples[0].keys())
     output_table = pd.DataFrame([[sample[key] for key in keys] for sample in samples], columns=keys)
-    output_table.to_excel(OUTPUT_DIR / '2b/2bresult.xlsx', index=False)
+    output_table.to_excel(OUTPUT_DIR / f'2b{MODE}result.xlsx', index=False)

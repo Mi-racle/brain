@@ -1,3 +1,4 @@
+import argparse
 import os.path
 
 import numpy as np
@@ -5,9 +6,15 @@ import pandas as pd
 
 from utils import ROOT
 
+parser = argparse.ArgumentParser()
+parser.add_argument('--mode', default='ED', type=str, help='Hemo or ED')
+opt = parser.parse_args()
+
+MODE = opt.mode
+
 THERAPY_PATH = ROOT / 'data/表1-患者列表及临床信息.xlsx'
-CURVE_PATH = ROOT / 'logs/2b/2bresult.xlsx'
-OUTPUT_PATH = ROOT / 'logs/2c/2cresult.xlsx'
+CURVE_PATH = ROOT / f'logs/2b/2b{MODE}result.xlsx'
+OUTPUT_PATH = ROOT / f'logs/2c/2c{MODE}result.xlsx'
 
 
 def normalize(arr):
@@ -45,7 +52,17 @@ for i in range(100):
     params_str = params_str.replace('[', '').replace(']', '')
     param_str_list = params_str.split(' ')
 
-    assert len(param_str_list) == 2
+    if len(param_str_list) != 2:
+
+        temp = []
+
+        for ps in param_str_list:
+
+            if ps != '':
+
+                temp.append(ps)
+
+        param_str_list = temp
 
     target_as.append(float(param_str_list[0]))
     target_bs.append(float(param_str_list[1]))
