@@ -12,9 +12,9 @@ OUTPUT_PATH = ROOT / 'logs/2c/2cresult.xlsx'
 
 def normalize(arr):
 
-    absolute_arr = np.abs(arr)
-    max_element = np.max(absolute_arr)
-    normalized_arr = arr / max_element
+    positive_arr = arr[arr > 0]
+    summation = np.sum(positive_arr)
+    normalized_arr = arr / summation
 
     return normalized_arr
 
