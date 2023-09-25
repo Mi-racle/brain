@@ -33,7 +33,6 @@ table_therapy = pd.read_excel(
     usecols=[16, 17, 18, 19, 20, 21, 22],
     nrows=100
 )
-
 inputs = table_therapy.to_numpy()
 
 table_curve = pd.read_excel(

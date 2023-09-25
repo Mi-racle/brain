@@ -28,7 +28,7 @@ CLUSTERS = 5
 # y = a * x^(1/2) * e^(-bx)
 def func(x, _a, _b):
 
-    return _a * np.sqrt(x) * pow(np.e, -_b * x)
+    return _a * x ** 0.5 * np.e ** (-_b * x)
 
 
 def get_data(path):
@@ -174,7 +174,7 @@ def average_kmeans(samples):
     max_iterations = 2000
     desired_cluster_size = len(samples) / CLUSTERS
 
-    for iter in tqdm(range(max_iterations)):
+    for __ in tqdm(range(max_iterations)):
 
         kmeans.fit(distance_matrix)
 

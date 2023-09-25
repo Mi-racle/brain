@@ -24,7 +24,7 @@ OUTPUT_IMG_PATH = ROOT / f'logs/2a/2a{MODE}.png'
 # y = a * x^(1/2) * e^(-bx)
 def func(x, _a, _b):
 
-    return _a * np.sqrt(x) * pow(np.e, -_b * x)
+    return _a * x ** 0.5 * np.e ** (-_b * x)
 
 
 def get_data(path):
@@ -85,7 +85,7 @@ if __name__ == '__main__':
     sub_ids, x_data, y_data = get_data(DATA_DIR_PATH / f'2a{MODE}.xlsx')
 
     # fit
-    params, *covariance = curve_fit(f=func, xdata=x_data, ydata=y_data)
+    params, *covariance = curve_fit(f=func, xdata=x_data, ydata=y_data, bounds=([0, 0], [np.inf, np.inf]))
 
     print(f"params: {params}")
 
