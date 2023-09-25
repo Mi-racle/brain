@@ -12,19 +12,21 @@ from utils import ROOT
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--mode', default='ED', type=str, help='Hemo or ED')
+parser.add_argument('-q', default='2b', type=str, help='2b or 3b')
 opt = parser.parse_args()
 
 MODE = opt.mode
+question = opt.q
 
 DATA_DIR_PATH = ROOT / 'data'
-OUTPUT_DIR = ROOT / f'logs/2b'
+OUTPUT_DIR = ROOT / f'logs/{question}'
 
 CLUSTERS = 5
 
 
 # y = a * x^(1/2) * e^(-bx)
 def func(x, _a, _b):
-    # return _a * x ** 3 + _b * x ** 2
+
     return _a * np.sqrt(x) * pow(np.e, -_b * x)
 
 
@@ -127,7 +129,7 @@ def group_data(x_data, y_data, labels):
 
 def average_kmeans(samples):
 
-    kmeans = KMeans(n_clusters=CLUSTERS, init='k-means++', random_state=0)
+    kmeans = KMeans(n_clusters=CLUSTERS, n_init='auto', init='k-means++', random_state=0)
 
     distance_matrix = []
 
@@ -154,10 +156,10 @@ def average_kmeans(samples):
 
     # 25 curves per group
 
-    max_iterations = 200
+    max_iterations = 4000
     desired_cluster_size = len(samples) / CLUSTERS
 
-    for iter in range(max_iterations):
+    for iter in tqdm(range(max_iterations)):
 
         kmeans.fit(distance_matrix)
 
@@ -202,7 +204,7 @@ def curve_similarity(params1, params2):
 
 if __name__ == '__main__':
 
-    x_data, y_data = get_data(DATA_DIR_PATH / f'2b{MODE}.xlsx')
+    x_data, y_data = get_data(DATA_DIR_PATH / f'{question}{MODE}.xlsx')
 
     samples = []
     # fit
@@ -223,6 +225,12 @@ if __name__ == '__main__':
 
     grouped_x_data, grouped_y_data = group_data(x_data, y_data, labels)
 
+    if not os.path.exists(OUTPUT_DIR.parent):
+        os.mkdir(OUTPUT_DIR.parent)
+
+    if not os.path.exists(OUTPUT_DIR):
+        os.mkdir(OUTPUT_DIR)
+
     grouped_params = []
 
     for i in range(len(grouped_x_data)):
@@ -239,7 +247,7 @@ if __name__ == '__main__':
         plt.xlabel("time")
         plt.ylabel("volume")
         plt.legend()
-        plt.savefig(OUTPUT_DIR / f'2b{MODE}{i}.png')
+        plt.savefig(OUTPUT_DIR / f'{question}{MODE}{i}.png')
         plt.clf()
         # plt.show()
 
@@ -263,12 +271,6 @@ if __name__ == '__main__':
 
         samples[i]['residual'] = total_residual
 
-    if not os.path.exists(OUTPUT_DIR.parent):
-        os.mkdir(OUTPUT_DIR.parent)
-
-    if not os.path.exists(OUTPUT_DIR):
-        os.mkdir(OUTPUT_DIR)
-
     keys = list(samples[0].keys())
     output_table = pd.DataFrame([[sample[key] for key in keys] for sample in samples], columns=keys)
-    output_table.to_excel(OUTPUT_DIR / f'2b{MODE}result.xlsx', index=False)
+    output_table.to_excel(OUTPUT_DIR / f'{question}{MODE}result.xlsx', index=False)
