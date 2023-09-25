@@ -50,22 +50,10 @@ for i in range(100):
 
     params_str = table_curve.iloc[i, 0]
     params_str = params_str.replace('[', '').replace(']', '')
-    param_str_list = params_str.split(' ')
+    params_str = np.array([float(p) for p in params_str.split() if p])
 
-    if len(param_str_list) != 2:
-
-        temp = []
-
-        for ps in param_str_list:
-
-            if ps != '':
-
-                temp.append(ps)
-
-        param_str_list = temp
-
-    target_as.append(float(param_str_list[0]))
-    target_bs.append(float(param_str_list[1]))
+    target_as.append(float(params_str[0]))
+    target_bs.append(float(params_str[1]))
 
 target_as, target_bs = np.array(target_as), np.array(target_bs)
 

@@ -19,6 +19,7 @@ MODE = opt.mode
 question = opt.q
 
 DATA_DIR_PATH = ROOT / 'data'
+PARAMS_PATH = ROOT / f'logs/2a/2a{MODE}params.txt'
 OUTPUT_DIR = ROOT / f'logs/{question}'
 
 CLUSTERS = 5
@@ -133,30 +134,44 @@ def average_kmeans(samples):
 
     distance_matrix = []
 
-    for iter in tqdm(range(len(samples))):
+    # for iter in tqdm(range(len(samples))):
 
-        params1 = samples[iter]['params']
-        distance_vector = []
+        # params1 = samples[iter]['params']
+        # distance_vector = []
 
-        for j in range(len(samples)):
+        # for j in range(len(samples)):
+        #
+        #     if iter == j:
+        #         distance_vector.append(0.)
+        #
+        #     elif iter > j:  # lower triangle
+        #         distance_vector.append(distance_matrix[j][iter])
+        #
+        #     else:
+        #         params2 = samples[j]['params']
+        #         distance_vector.append(curve_similarity(params1, params2))
 
-            if iter == j:
-                distance_vector.append(0.)
+        # distance_matrix.append(distance_vector)
 
-            elif iter > j:  # lower triangle
-                distance_vector.append(distance_matrix[j][iter])
+    for sample in tqdm(samples):
 
-            else:
-                params2 = samples[j]['params']
-                distance_vector.append(curve_similarity(params1, params2))
+        a, b = sample['params'][0], sample['params'][1]
 
-        distance_matrix.append(distance_vector)
+        lam1 = 0.5 / b
+
+        lam2 = (1. / np.sqrt(2. * np.e)) * (a / np.sqrt(b))
+
+        t = (1. + np.sqrt(2.)) / 2.
+        lam3 = (-1. / (2. * np.sqrt(t) * np.e ** t)) * a * np.sqrt(b)
+
+        distance_vector = [lam1, lam2, lam3]
+        distance_matrix.append(np.array(distance_vector))
 
     distance_matrix = np.array(distance_matrix)
 
     # 25 curves per group
 
-    max_iterations = 4000
+    max_iterations = 2000
     desired_cluster_size = len(samples) / CLUSTERS
 
     for iter in tqdm(range(max_iterations)):
@@ -204,6 +219,15 @@ def curve_similarity(params1, params2):
 
 if __name__ == '__main__':
 
+    fin = open(PARAMS_PATH, 'r')
+    total_params = fin.read()
+    fin.close()
+    total_params = np.array([float(p) for p in total_params.split() if p])
+
+    tolerance = 5e-2
+    lower_bounds = total_params * (1 - tolerance)
+    upper_bounds = total_params * (1 + tolerance)
+
     x_data, y_data = get_data(DATA_DIR_PATH / f'{question}{MODE}.xlsx')
 
     samples = []
@@ -213,7 +237,7 @@ if __name__ == '__main__':
         sample = {'sub_id': 'sub' + str(i).zfill(3)}
 
         x_axis, y_axis = x_data[i], y_data[i]
-        params, *covariance = curve_fit(f=func, xdata=x_axis, ydata=y_axis)
+        params, *covariance = curve_fit(f=func, xdata=x_axis, ydata=y_axis, bounds=(lower_bounds, upper_bounds))
 
         print(f"params: {params}")
 
@@ -236,7 +260,7 @@ if __name__ == '__main__':
     for i in range(len(grouped_x_data)):
 
         x_axis, y_axis = grouped_x_data[i], grouped_y_data[i]
-        params, *covariance = curve_fit(f=func, xdata=x_axis, ydata=y_axis)
+        params, *covariance = curve_fit(f=func, xdata=x_axis, ydata=y_axis, bounds=(lower_bounds, upper_bounds))
 
         print(f"params: {params}")
 

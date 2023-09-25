@@ -16,6 +16,7 @@ opt = parser.parse_args()
 MODE = opt.mode
 
 DATA_DIR_PATH = ROOT / 'data'
+OUTPUT_PARAM_PATH = ROOT / f'logs/2a/2a{MODE}params.txt'
 OUTPUT_XLSX_PATH = ROOT / f'logs/2a/2a{MODE}result.xlsx'
 OUTPUT_IMG_PATH = ROOT / f'logs/2a/2a{MODE}.png'
 
@@ -87,6 +88,11 @@ if __name__ == '__main__':
     params, *covariance = curve_fit(f=func, xdata=x_data, ydata=y_data)
 
     print(f"params: {params}")
+
+    with open(OUTPUT_PARAM_PATH, 'w') as fout:
+        for param in params:
+            fout.write(str(param) + '\n')
+        fout.close()
 
     plt.scatter(x_data, y_data, s=10, label="data")
     plt.plot(x_data, func(x_data, *params), color='red', label="curve")
